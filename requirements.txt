@@ -1,0 +1,8 @@
+google-generativeai
+streamlit
+openpyxl
+pandas
+xlrd
+numpy
+xlsxwriter
+python-dotenv
