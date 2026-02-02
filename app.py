@@ -33,14 +33,15 @@ st.markdown("""
 # VERTICAL QUOTES PROCESSOR CLASS
 # ============================================================================
 
+
 class VerticalQuoteProcessor:
     """Handles processing of vertical format Excel quote files"""
     
     def __init__(self, density=7.85e-6):
         self.density = density
     
-    def find_matching_sheet(self, excel_file):
-        """Find the appropriate sheet to process in the Excel file"""
+    def find_matching_sheets(self, excel_file):
+        """Find ALL appropriate sheets to process in the Excel file"""
         sheet_names = excel_file.sheet_names
         matching_sheets = [
             sheet for sheet in sheet_names
@@ -50,7 +51,7 @@ class VerticalQuoteProcessor:
                 sheet.isdigit())
             and ("deleted" not in sheet.lower() and "other" not in sheet.lower())
         ]
-        return matching_sheets[0] if matching_sheets else None
+        return matching_sheets  # Return ALL matching sheets, not just first one
     
     def find_right_of(self, label, df, offset=1, start_row=0, end_row=None, regex=False):
         """Find value to the right of a label in the dataframe"""
@@ -442,8 +443,8 @@ class VerticalQuoteProcessor:
         
         return finish_weight_kg
     
-    def process_quote(self, df, output_path):
-        """Main processing function for vertical quotes"""
+    def process_single_sheet(self, df):
+        """Process a single sheet and return the data rows"""
         assembly_part_no, assembly_part_name, assembly_mod = self.extract_assembly_info(df)
         assembly_validity = 1
 
@@ -541,53 +542,84 @@ class VerticalQuoteProcessor:
                 "SCRAP RATE": dimensions['scrap_rate'],
             })
 
-        output_df = pd.DataFrame(output_rows)
-
+        return output_rows
+    
+    def process_quote(self, file_obj, output_path):
+        """Main processing function for vertical quotes - creates separate sheet for each source sheet"""
+        excel_file = pd.ExcelFile(file_obj)
+        matching_sheets = self.find_matching_sheets(excel_file)
+        
+        if not matching_sheets:
+            return None
+        
+        sheet_data = {}
+        
+        # Process each matching sheet separately
+        for sheet_name in matching_sheets:
+            df = pd.read_excel(file_obj, sheet_name=sheet_name, header=None)
+            sheet_rows = self.process_single_sheet(df)
+            
+            if sheet_rows:
+                sheet_data[sheet_name] = pd.DataFrame(sheet_rows)
+        
+        if not sheet_data:
+            return None
+        
+        # Write to Excel with separate sheets
         import xlsxwriter
         with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-            output_df.to_excel(writer, index=False, sheet_name='Sheet1')
-
             workbook = writer.book
-            worksheet = writer.sheets['Sheet1']
-
+            
             yellow_format = workbook.add_format({
                 'bg_color': '#FFFF00',
                 'border': 1
             })
+            
+            for sheet_name, output_df in sheet_data.items():
+                # Truncate sheet name if too long (Excel limit is 31 characters)
+                safe_sheet_name = sheet_name[:31]
+                
+                output_df.to_excel(writer, index=False, sheet_name=safe_sheet_name)
+                worksheet = writer.sheets[safe_sheet_name]
+                
+                columns_to_highlight = ['LEVEL', 'Type', 'Commodity']
+                
+                for col_name in columns_to_highlight:
+                    if col_name in output_df.columns:
+                        col_idx = output_df.columns.get_loc(col_name)
+                        
+                        for row_num in range(1, len(output_df) + 1):
+                            worksheet.write(row_num, col_idx, output_df.iloc[row_num - 1][col_name], yellow_format)
 
-            columns_to_highlight = ['LEVEL', 'Type', 'Commodity']
-
-            for col_name in columns_to_highlight:
-                if col_name in output_df.columns:
-                    col_idx = output_df.columns.get_loc(col_name)
-
-                    for row_num in range(1, len(output_df) + 1):
-                        worksheet.write(row_num, col_idx, output_df.iloc[row_num - 1][col_name], yellow_format)
-
-        return output_df
+        return sheet_data
     
     def process_file(self, uploaded_file):
         """Process a single uploaded file"""
         try:
             excel_file = pd.ExcelFile(uploaded_file)
-            sheet = self.find_matching_sheet(excel_file)
+            matching_sheets = self.find_matching_sheets(excel_file)
             
-            if not sheet:
-                return {'status': 'skipped', 'filename': uploaded_file.name, 'reason': 'No matching sheet'}
+            if not matching_sheets:
+                return {'status': 'skipped', 'filename': uploaded_file.name, 'reason': 'No matching sheets found'}
             
-            df = pd.read_excel(uploaded_file, sheet_name=sheet, header=None)
             output_buffer = BytesIO()
-            self.process_quote(df, output_buffer)
+            result_data = self.process_quote(uploaded_file, output_buffer)
+            
+            if result_data is None or len(result_data) == 0:
+                return {'status': 'skipped', 'filename': uploaded_file.name, 'reason': 'No data extracted from sheets'}
+            
             output_buffer.seek(0)
             
             return {
                 'status': 'success',
                 'filename': uploaded_file.name,
                 'output_filename': os.path.splitext(uploaded_file.name)[0] + "_Processed.xlsx",
-                'buffer': output_buffer
+                'buffer': output_buffer,
+                'sheets_processed': len(matching_sheets)
             }
         except Exception as e:
             return {'status': 'error', 'filename': uploaded_file.name, 'reason': str(e)}
+
 
 
 # ============================================================================
@@ -1169,3 +1201,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
