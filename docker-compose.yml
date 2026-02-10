@@ -1,0 +1,11 @@
+version: '3' # update to version 2 for ubuntu 16.04
+services:
+  quotes_processor_sorting:
+    build:
+      context: .
+    container_name: quotes_processor_dashboard
+    image: quotes_processor_dashboard
+    ports:
+      - '9266:8506'
+   
+    restart: always
