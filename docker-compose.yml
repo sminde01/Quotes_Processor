@@ -6,6 +6,6 @@ services:
     container_name: quotes_processor_dashboard
     image: quotes_processor_dashboard
     ports:
-      - '9266:8506'
+      - '9265:8506'
    
     restart: always
