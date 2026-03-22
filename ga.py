@@ -17,10 +17,7 @@ def _is_local() -> bool:
 
 def load_ga(app_name: str) -> None:
     try:
-        local = _is_local()
-        st.write("_is_local result:", local)   # ← temporary
-        st.write("Host:", st.context.headers.get("Host", ""))  # ← temporary
-        if local:
+        if _is_local():
             return  # skip entirely for localhost
 
         components.html(
