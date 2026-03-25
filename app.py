@@ -12,9 +12,9 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from dotenv import load_dotenv
 
-from ga import load_ga, track_event, _is_local
 load_dotenv()
 
+from ga import load_ga, track_event, _is_local
 # Page configuration
 st.set_page_config(
     page_title="Quote Processor",
@@ -949,7 +949,7 @@ class HorizontalQuoteProcessor:
 def main():
     st.title("📊 Quote Processor")
     st.markdown("---")
-    load_ga("Quote_Processor")
+    load_ga("Quote_Processor") 
     
     # Custom CSS for separated column-style tabs
     st.markdown("""
@@ -1005,7 +1005,7 @@ def main():
             st.subheader(f"📁 {len(uploaded_files_v)} file(s) ready for processing")
             
             if st.button("🚀 Process Vertical Quotes", type="primary", key="process_v", use_container_width=True):
-                track_event("feature_used", "Quote_Processor", "Vertical_Quotes")
+                track_event("file_processed", app_name="Quote_Processor",feature="Vertical_Quotes")
                 processor = VerticalQuoteProcessor()
                 
                 with st.spinner("Processing..."):
@@ -1055,7 +1055,7 @@ def main():
                             use_container_width=True
                         )
 
-                        track_event("file_downloaded", "Quote_Processor", "Vertical_ZIP")
+                        track_event("file_downloaded", app_name="Quote_Processor", feature="Vertical_ZIP")
                         
                         with st.expander("📋 View processed files"):
                             for result in successful:
@@ -1104,7 +1104,7 @@ def main():
             st.subheader(f"📁 {len(uploaded_files_h)} file(s) ready for AI processing")
             
             if st.button("🤖 Process Horizontal Quotes (AI)", type="primary", key="process_h", use_container_width=True):
-                track_event("feature_used", "Quote_Processor", "Horizontal_Quotes")
+                track_event("feature_used", app_name="Quote_Processor", feature="Horizontal_Quotes")
                 processor = HorizontalQuoteProcessor(api_key)
                 
                 with st.spinner("AI Processing..."):
@@ -1154,7 +1154,7 @@ def main():
                             use_container_width=True
                         )
 
-                        track_event("file_downloaded", "Quote_Processor", "Horizontal_ZIP")
+                        track_event("file_downloaded", app_name="Quote_Processor", feature="Horizontal_ZIP")
                         
                         with st.expander("📋 View processed files"):
                             for result in successful:
