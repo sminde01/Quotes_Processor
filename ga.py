@@ -94,14 +94,13 @@ def load_ga(app_name: str) -> None:
         pass  # never crash the app due to GA
 
 
-def track_event(event_name: str, category: str, label: str = "") -> None:
+def track_event(event_name: str, **params) -> None:
     try:
         if _is_local():
-            return  # skip entirely for localhost
+            return
 
-        event_name = event_name.replace("'", "\\'")
-        category   = category.replace("'", "\\'")
-        label      = label.replace("'", "\\'")
+        import json
+        params_json = json.dumps(params)
 
         components.html(
             f"""
@@ -109,21 +108,21 @@ def track_event(event_name: str, category: str, label: str = "") -> None:
             (function() {{
                 try {{
                     const w = window.parent;
-
                     if (!w.gtag) return;
 
-                    let clientId = null;
+                    let uid = "anonymous";
                     try {{
-                        clientId = w.localStorage.getItem("custom_ga_user_id") || "anonymous";
-                    }} catch(e) {{
-                        clientId = "anonymous";
-                    }}
+                        uid = w.localStorage.getItem("real_user_id") 
+                           || w.localStorage.getItem("custom_ga_user_id") 
+                           || "anonymous";
+                    }} catch(e) {{}}
 
-                    w.gtag('event', '{event_name}', {{
-                        event_category: '{category}',
-                        event_label:    '{label}',
-                        user_id:        clientId
-                    }});
+                    const params = {params_json};
+                    params.user_id = uid;
+                    params.page_path = window.location.pathname;
+
+                    w.gtag('event', '{event_name}', params);
+
                 }} catch(e) {{
                     console.warn("GA track_event failed:", e);
                 }}
@@ -133,4 +132,14 @@ def track_event(event_name: str, category: str, label: str = "") -> None:
             height=0,
         )
     except Exception:
-        pass  # never crash the app due to GA
+        pass
+
+# <!-- Google tag (gtag.js) -->
+# <script async src="https://www.googletagmanager.com/gtag/js?id=G-M59HEQJCB3"></script>
+# <script>
+#   window.dataLayer = window.dataLayer || [];
+#   function gtag(){dataLayer.push(arguments);}
+#   gtag('js', new Date());
+
+#   gtag('config', 'G-M59HEQJCB3');
+# </script>
