@@ -1047,15 +1047,15 @@ def main():
                                 zip_file.writestr(result['output_filename'], result['buffer'].getvalue())
                         zip_buffer.seek(0)
                         
-                        st.download_button(
-                            label="📥 Download All Processed Files (ZIP)",
-                            data=zip_buffer,
-                            file_name=f"vertical_quotes_processed.zip",
-                            mime="application/zip",
-                            use_container_width=True
-                        )
-
-                        track_event("file_downloaded", app_name="Quote_Processor", feature="Vertical_ZIP")
+                        clicked = st.download_button(
+                                label="📥 Download All Processed Files (ZIP)",
+                                data=zip_buffer,
+                                file_name=f"vertical_quotes_processed.zip",
+                                mime="application/zip",
+                                use_container_width=True
+                            )
+                        if clicked:
+                            track_event("file_downloaded", app_name="Quote_Processor", feature="Vertical_ZIP")
                         
                         with st.expander("📋 View processed files"):
                             for result in successful:
@@ -1146,15 +1146,15 @@ def main():
                                 zip_file.writestr(result['output_filename'], result['buffer'].getvalue())
                         zip_buffer.seek(0)
                         
-                        st.download_button(
-                            label="📥 Download All Processed Files (ZIP)",
-                            data=zip_buffer,
-                            file_name=f"horizontal_quotes_ai_processed.zip",
-                            mime="application/zip",
-                            use_container_width=True
-                        )
-
-                        track_event("file_downloaded", app_name="Quote_Processor", feature="Horizontal_ZIP")
+                        clicked = st.download_button(
+                                label="📥 Download All Processed Files (ZIP)",
+                                data=zip_buffer,
+                                file_name=f"horizontal_quotes_ai_processed.zip",
+                                mime="application/zip",
+                                use_container_width=True
+                            )
+                        if clicked:
+                            track_event("file_downloaded", app_name="Quote_Processor", feature="Horizontal_ZIP")
                         
                         with st.expander("📋 View processed files"):
                             for result in successful:
