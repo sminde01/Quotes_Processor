@@ -1,7 +1,7 @@
 import os
 import streamlit.components.v1 as components
 
-GA_ID = "G-8DM8073S27"
+GA_ID = "G-M59HEQJCB3"
 
 def _is_local() -> bool:
     try:
@@ -134,12 +134,3 @@ def track_event(event_name: str, **params) -> None:
     except Exception:
         pass
 
-# <!-- Google tag (gtag.js) -->
-# <script async src="https://www.googletagmanager.com/gtag/js?id=G-M59HEQJCB3"></script>
-# <script>
-#   window.dataLayer = window.dataLayer || [];
-#   function gtag(){dataLayer.push(arguments);}
-#   gtag('js', new Date());
-
-#   gtag('config', 'G-M59HEQJCB3');
-# </script>
