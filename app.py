@@ -170,7 +170,7 @@ class VerticalQuoteProcessor:
     
     def extract_assembly_info(self, df):
         """Extract assembly part number, name, and MOD"""
-        assembly_part_no = self.find_right_of(r"\bassy\s*part\s*no\.?\s*[:\-]+", df, 1, start_row=0, end_row=5, regex=True)
+        assembly_part_no = self.find_right_of(r"\bassy\s*part\s*(?:no\.?|number)\s*[:\-]*", df, 1, start_row=0, end_row=5, regex=True)
         assembly_part_name = self.find_right_of(r"\bassy\s*part\s*name\.?\s*[:\-]+", df, 1, start_row=0, end_row=5, regex=True)
         assembly_mod = self.find_right_of(r"\bmod\.?\s*[:\-]*", df, offset=1, start_row=0, end_row=5, regex=True)
         
@@ -190,7 +190,7 @@ class VerticalQuoteProcessor:
             for c in range(len(df.columns)):
                 try:
                     cell = str(df.iat[r, c]).strip()
-                    if re.search(r"\bpart\s*no\.?\s*[:\-]+", cell, re.IGNORECASE):
+                    if re.search(r"\bpart\s*(?:no\.?|number)\s*[:\-]*", cell, re.IGNORECASE):
                         if not re.search(r"\bassy", cell, re.IGNORECASE):
                             part_no_row = r
                             part_no_col = c
