@@ -485,7 +485,7 @@ class VerticalQuoteProcessor:
         for r in range(len(df)):
             for c in range(len(df.columns)):
                 val = str(df.iat[r, c]).strip()
-                if re.search(r"\bpart\s*no\.?\s*[:\-]+", val, re.IGNORECASE):
+                if re.search(r"\bpart\s*(?:no\.?|number)\s*[:\-]*", val, re.IGNORECASE):
                     if not re.search(r"\bassy", val, re.IGNORECASE):
                         part_indices.append(r)
 
