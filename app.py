@@ -46,8 +46,8 @@ class VerticalQuoteProcessor:
         matching_sheets = [
             sheet for sheet in sheet_names
             if (("part" in sheet.lower() and "cost" in sheet.lower()) or 
-                ("common" in sheet.lower()) or 
-                ("part" in sheet.lower()) or 
+                ("common" in sheet.lower()) or ("working" in sheet.lower()) or
+                ("part" in sheet.lower()) or ("PC" in sheet.lower()) or
                 sheet.isdigit())
             and ("deleted" not in sheet.lower() and "other" not in sheet.lower())
         ]
